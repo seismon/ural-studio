@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="theme-color" content="#e9e4db"/>
+<title>URAL STUDIO — Digital Studio</title>
+<meta name="description" content="Ural Studio — independent digital studio creating visual digital experiences."/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&family=Permanent+Marker&display=swap');
+
+:root{
+  --bg:#e9e4db;
+  --paper:#f1eee7;
+  --ink:#151514;
+  --muted:#787671;
+  --faint:#b8b3aa;
+  --line:rgba(21,21,20,.13);
+  --violet:#6c5ce7;
+  --orange:#ee7655;
+  --acid:#c9ed45;
+  --blue:#5677d8;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:Manrope,system-ui,sans-serif;overflow-x:hidden
+}
+button,a{font:inherit;color:inherit}
+button{border:0;background:none;cursor:pointer}
+a{text-decoration:none}
+::selection{background:var(--violet);color:#fff}
+
+/* ---------- base texture ---------- */
+.paper-noise{
+  position:fixed;inset:-60%;z-index:99;pointer-events:none;opacity:.045;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation:paperNoise .35s steps(2) infinite
+}
+@keyframes paperNoise{50%{transform:translate(1.3%,-1%)}100%{transform:translate(-1%,1.2%)}}
+
+/* ---------- hand drawn details ---------- */
+.graffiti{
+  position:absolute;pointer-events:none;z-index:4;color:var(--ink);
+  font:14px/1.05 'Permanent Marker',cursive;
+  transform:rotate(-8deg);
+  opacity:.82
+}
+.graffiti small{
+  display:block;font:9px 'DM Mono',monospace;letter-spacing:.12em;
+  color:var(--muted);margin-top:6px;transform:rotate(5deg)
+}
+.graffiti .underline{
+  display:block;width:96px;height:13px;border-bottom:2px solid currentColor;
+  border-radius:50%;transform:rotate(-3deg);opacity:.8
+}
+.graffiti-arrow{
+  position:absolute;width:90px;height:46px;pointer-events:none;z-index:5
+}
+.graffiti-arrow path{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.graffiti-arrow polygon{fill:currentColor}
+.spray{
+  position:absolute;border-radius:50%;pointer-events:none;z-index:2;
+  width:150px;height:150px;
+  background:
+    radial-gradient(circle at 50% 50%,rgba(108,92,231,.16) 0 5%,transparent 6%),
+    radial-gradient(circle at 35% 62%,rgba(108,92,231,.13) 0 2%,transparent 3%),
+    radial-gradient(circle at 65% 33%,rgba(108,92,231,.12) 0 2%,transparent 3%),
+    radial-gradient(circle at 57% 72%,rgba(108,92,231,.11) 0 1.5%,transparent 2.5%),
+    radial-gradient(circle at 20% 35%,rgba(108,92,231,.10) 0 1.3%,transparent 2.3%);
+  filter:blur(.15px)
+}
+
+/* ---------- top bar ---------- */
+.top{
+  position:fixed;left:0;right:0;top:0;z-index:60;
+  padding:22px 34px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;
+  transition:.35s
+}
+.top.scrolled{
+  background:rgba(233,228,219,.82);backdrop-filter:blur(12px);
+  padding-top:15px;padding-bottom:15px;border-bottom:1px solid var(--line)
+}
+.brand{display:flex;align-items:center;gap:10px;font-size:11px;font-weight:800;letter-spacing:.14em}
+.mark{width:22px;height:22px;position:relative}
+.mark i{
+  position:absolute;width:2px;height:17px;top:2px;background:var(--ink);
+  border-radius:50px
+}
+.mark i:first-child{left:6px;transform:rotate(12deg)}
+.mark i:last-child{right:6px;transform:rotate(-12deg)}
+.nav{display:flex;gap:28px;font:9px 'DM Mono',monospace;letter-spacing:.14em;color:#6e6b66}
+.nav a{position:relative}
+.nav a:after{
+  content:"";position:absolute;left:0;right:0;bottom:-8px;height:1px;
+  background:var(--violet);transform:scaleX(0);transform-origin:left;transition:.25s
+}
+.nav a:hover{color:var(--ink)}
+.nav a:hover:after{transform:scaleX(1)}
+.meta{
+  justify-self:end;display:flex;gap:17px;align-items:center;
+  font:9px 'DM Mono',monospace;letter-spacing:.13em;color:#77736d
+}
+.menu{display:none}
+
+/* ---------- page frame ---------- */
+.page{position:relative}
+.section{padding:170px 8vw}
+.label{
+  display:flex;justify-content:space-between;border-top:1px solid var(--line);
+  padding-top:12px;font:9px 'DM Mono',monospace;letter-spacing:.16em;color:#77736d
+}
+
+/* ---------- hero ---------- */
+.hero{
+  min-height:100svh;padding:146px 8vw 38px;position:relative;overflow:hidden;
+  display:flex;flex-direction:column;justify-content:space-between
+}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(21,21,20,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(21,21,20,.045) 1px,transparent 1px);
+  background-size:9vw 9vw;
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.9),transparent 90%)
+}
+.hero-kicker{
+  position:relative;z-index:3;display:flex;justify-content:space-between;
+  font:9px 'DM Mono',monospace;letter-spacing:.14em;color:#77736d
+}
+.hero-title{position:relative;z-index:3;max-width:1280px;padding-top:10vh}
+.hero-title small{font:9px 'DM Mono',monospace;letter-spacing:.17em;color:#77736d}
+.big{
+  font-size:clamp(74px,11.5vw,185px);font-weight:800;line-height:.82;
+  letter-spacing:-.07em
+}
+.line{display:flex;align-items:baseline;gap:2vw}
+.big.outline{color:transparent;-webkit-text-stroke:1.3px rgba(21,21,20,.62)}
+.line.accent{justify-content:space-between;padding-right:10vw}
+.hero-scribble{
+  font:clamp(16px,2vw,26px) 'Permanent Marker',cursive;
+  transform:rotate(-7deg);display:inline-block;color:var(--violet);
+  margin-right:8vw;animation:scribbleBob 3.8s ease-in-out infinite
+}
+@keyframes scribbleBob{50%{transform:rotate(-4deg) translateY(-4px)}}
+
+.hero-bottom{
+  position:relative;z-index:3;display:grid;grid-template-columns:1fr auto 1fr;
+  align-items:end;gap:20px;font:9px/1.5 'DM Mono',monospace;letter-spacing:.11em;color:#77736d
+}
+.hero-copy{max-width:330px;font:11px/1.65 Manrope,sans-serif;text-transform:uppercase;letter-spacing:.05em}
+.scrollHint{justify-self:center;cursor:pointer;border-bottom:1px solid var(--ink);padding-bottom:5px}
+.scrollHint:hover{color:var(--violet);border-color:var(--violet)}
+.coords{justify-self:end}
+
+/* ---------- hero graffiti ---------- */
+.hero-g1{right:7vw;top:24vh;color:var(--violet);font-size:clamp(18px,2.4vw,31px)}
+.hero-g2{left:45%;top:29vh;color:var(--orange);transform:rotate(6deg);font-size:18px}
+.hero-spray{right:1vw;top:18vh}
+.hero-arrow{right:17vw;bottom:24vh;color:var(--violet);transform:rotate(-8deg)}
+
+/* ---------- headings ---------- */
+.section h2,.workHead h2,.servicesTop h2,.statement h2,.studioText h2,.playTop h2,.contactTop h2{
+  font-size:clamp(50px,7.4vw,122px);line-height:.88;letter-spacing:-.065em;margin:0;font-weight:800
+}
+.outlineText{color:transparent;-webkit-text-stroke:1px rgba(21,21,20,.58)}
+.acid{color:var(--violet)}
+
+/* ---------- intro ---------- */
+.introGrid{display:grid;grid-template-columns:1.26fr .74fr;gap:7vw;padding-top:10vh}
+.copy{padding-top:6px;color:#74716c;font-size:13px;line-height:1.75;max-width:300px}
+.system{margin-top:100px;border-top:1px solid var(--line)}
+.system div{
+  padding:14px 0;border-bottom:1px solid var(--line);
+  font:9px 'DM Mono',monospace;letter-spacing:.15em;color:#76736e;
+  display:flex;justify-content:space-between
+}
+.system div:after{content:"↗";color:var(--violet)}
+.intro-art{
+  position:relative;min-height:380px;display:grid;place-items:center;
+  background:linear-gradient(135deg,rgba(255,255,255,.45),rgba(255,255,255,0))
+}
+.intro-art .stamp{
+  width:190px;height:190px;border:1px solid var(--ink);border-radius:50%;
+  display:grid;place-items:center;transform:rotate(-12deg);position:relative
+}
+.intro-art .stamp:before,.intro-art .stamp:after{
+  content:"";position:absolute;border-radius:50%;border:1px dashed rgba(21,21,20,.35)
+}
+.intro-art .stamp:before{inset:18px}.intro-art .stamp:after{inset:38px}
+.intro-art .stamp span{
+  font:11px 'DM Mono',monospace;letter-spacing:.14em;text-align:center
+}
+.intro-art .scribble{
+  position:absolute;left:12%;bottom:15%;font:18px 'Permanent Marker',cursive;
+  transform:rotate(-8deg);color:var(--orange)
+}
+
+/* ---------- work ---------- */
+.workHead{display:grid;grid-template-columns:1fr .45fr;align-items:end;gap:5vw;padding:8vh 0 9vh}
+.workHead p{max-width:290px;justify-self:end;color:#77736e;font-size:12px;line-height:1.75}
+.projects{display:flex;flex-direction:column;gap:16vh}
+.project{position:relative}
+.visual{
+  height:min(67vh,680px);min-height:420px;border:1px solid var(--line);
+  position:relative;overflow:hidden;background:var(--paper)
+}
+.visual:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.16),transparent 50%,rgba(0,0,0,.05))}
+.v1{background:linear-gradient(135deg,#dedbd4,#bebbb3 48%,#ece9e1)}
+.v2{background:linear-gradient(135deg,#d6d3c9,#aaa69d 55%,#8f8b83)}
+.v3{background:radial-gradient(circle at 50% 50%,#727ce0,#d8d4cd 52%,#e6e1d8 100%)}
+.v4{background:linear-gradient(135deg,#dfd2c7,#c4a3a5 52%,#a5828b)}
+.project-art{
+  position:absolute;inset:0;display:grid;place-items:center
+}
+.hoverTag{
+  position:absolute;right:20px;bottom:20px;z-index:5;padding:10px 13px;
+  border:1px solid rgba(21,21,20,.25);background:rgba(241,238,231,.65);
+  backdrop-filter:blur(8px);font:8px 'DM Mono',monospace;letter-spacing:.1em;
+  opacity:0;transform:translateY(10px);transition:.3s
+}
+.project:hover .hoverTag{opacity:1;transform:none}
+.metaRow{
+  display:flex;justify-content:space-between;padding-top:14px;color:#77736e;
+  font:9px 'DM Mono',monospace;letter-spacing:.14em
+}
+.projectInfo{display:grid;grid-template-columns:1fr .62fr;gap:4vw;align-items:end;padding-top:16px}
+.projectInfo h3{font-size:clamp(48px,7.2vw,110px);line-height:.88;letter-spacing:-.07em;margin:0}
+.projectInfo p{margin:0;color:#77736e;font-size:11.5px;line-height:1.7}
+.tech{display:flex;gap:18px;padding-top:14px;color:#77736e;font:8px 'DM Mono',monospace;letter-spacing:.13em}
+
+/* artwork 1 */
+.ribbon{
+  width:35%;height:72%;border:1.7px solid rgba(21,21,20,.75);
+  border-radius:50% 42% 55% 45% / 60% 40% 60% 40%;
+  transform:rotate(-20deg);position:relative
+}
+.ribbon:before,.ribbon:after{
+  content:"";position:absolute;inset:9%;border:1px solid rgba(21,21,20,.3);border-radius:inherit
+}
+.ribbon:after{inset:19%;border-style:dashed}
+.v1 .project-art:after{
+  content:"NØR";position:absolute;right:10%;top:14%;
+  font:clamp(40px,7vw,95px) 'Permanent Marker',cursive;transform:rotate(8deg);color:rgba(21,21,20,.72)
+}
+
+/* artwork 2 */
+.blocks{width:42%;height:50%;position:relative;transform:rotate(-6deg)}
+.blocks i{position:absolute;display:block;border:1px solid rgba(21,21,20,.25);background:rgba(255,255,255,.12)}
+.blocks i:nth-child(1){inset:0 28% 32% 0}
+.blocks i:nth-child(2){inset:32% 0 0 30%}
+.blocks i:nth-child(3){inset:15%}
+.v2 .project-art:after{
+  content:"FORM / SPACE";position:absolute;left:9%;bottom:12%;
+  font:12px 'DM Mono',monospace;letter-spacing:.12em;color:rgba(21,21,20,.5);
+  transform:rotate(-2deg)
+}
+
+/* artwork 3 */
+.orb{width:38%;aspect-ratio:1;border:1px solid rgba(21,21,20,.48);border-radius:50%;position:relative;animation:slowSpin 16s linear infinite}
+.orb:before,.orb:after{
+  content:"";position:absolute;inset:-16%;border:1px solid rgba(21,21,20,.18);border-radius:50%
+}
+.orb:after{inset:16%;border-style:dashed}
+.orb i{
+  position:absolute;width:10px;height:10px;border-radius:50%;background:var(--violet);
+  top:0;left:50%;transform:translate(-50%,-50%)
+}
+.orb i:nth-child(2){top:56%;left:0;background:var(--orange)}
+.orb i:nth-child(3){top:83%;left:72%;background:var(--ink)}
+@keyframes slowSpin{to{transform:rotate(360deg)}}
+.v3 .project-art:after{
+  content:"ORBIT / 03";position:absolute;right:7%;bottom:13%;
+  font:10px 'DM Mono',monospace;letter-spacing:.12em;color:rgba(21,21,20,.55)
+}
+
+/* artwork 4 */
+.bloom{width:41%;aspect-ratio:1;position:relative}
+.bloom i{
+  position:absolute;left:50%;top:50%;width:27%;height:60%;
+  transform-origin:50% 100%;border-radius:70% 70% 12% 12%;
+  background:rgba(255,255,255,.45);border:1px solid rgba(21,21,20,.35)
+}
+.bloom i:nth-child(1){transform:translate(-50%,-100%) rotate(0deg)}
+.bloom i:nth-child(2){transform:translate(-50%,-100%) rotate(90deg)}
+.bloom i:nth-child(3){transform:translate(-50%,-100%) rotate(180deg)}
+.bloom i:nth-child(4){transform:translate(-50%,-100%) rotate(270deg)}
+.v4 .project-art:after{
+  content:"MIRA";position:absolute;left:9%;top:12%;
+  font:clamp(34px,5vw,72px) 'Permanent Marker',cursive;transform:rotate(-9deg);color:rgba(21,21,20,.67)
+}
+
+/* ---------- services ---------- */
+.servicesTop{
+  display:grid;grid-template-columns:1.1fr .65fr;align-items:end;gap:5vw;padding:8vh 0 8vh
+}
+.servicesTop p{max-width:280px;color:#77736e;line-height:1.75;font-size:12px}
+.serviceList{border-top:1px solid var(--line)}
+.service{
+  display:grid;grid-template-columns:55px 1fr .7fr 25px;gap:20px;align-items:center;
+  min-height:120px;border-bottom:1px solid var(--line);padding:0 6px;transition:.35s
+}
+.service:hover{background:rgba(255,255,255,.42);padding-left:18px;padding-right:18px}
+.service small,.service p{font:9px/1.5 'DM Mono',monospace;color:#77736e}
+.service h3{margin:0;font-size:clamp(23px,3vw,45px);letter-spacing:-.045em}
+.service b{font-weight:400;color:var(--violet);font-size:17px}
+
+/* ---------- statement ---------- */
+.statement{
+  position:relative;overflow:hidden;min-height:80vh;display:grid;place-items:center;
+  padding:130px 8vw;background:#181817;color:#f2eee5
+}
+.statement:before{
+  content:"";position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:8vw 8vw
+}
+.statementInner{width:min(1100px,100%);position:relative;z-index:2}
+.statementInner>span{font:9px 'DM Mono',monospace;letter-spacing:.14em;color:#8d8b86}
+.statement h2{margin-top:55px}
+.statement .outlineText{-webkit-text-stroke:1px rgba(242,238,229,.6)}
+.statementLine{height:1px;background:rgba(255,255,255,.17);margin:55px 0 20px}
+.statement p{margin:0;max-width:420px;color:#a7a49e;line-height:1.7;font-size:12px}
+.statement .graffiti{color:var(--acid);right:4%;top:17%;font-size:21px;transform:rotate(9deg)}
+
+/* ---------- studio ---------- */
+.studioGrid{display:grid;grid-template-columns:.86fr 1.14fr;gap:7vw;align-items:center;padding-top:9vh}
+.poster{
+  min-height:590px;display:grid;place-items:center;
+  background:linear-gradient(135deg,#f4f0e7,#d9d3c8);position:relative;overflow:hidden
+}
+.posterFrame{
+  width:68%;aspect-ratio:.78;border:1px solid rgba(21,21,20,.36);position:relative;
+  display:grid;place-items:center;overflow:hidden
+}
+.posterFrame:before,.posterFrame:after{content:"";position:absolute;inset:13%;border:1px solid rgba(21,21,20,.12);transform:rotate(14deg)}
+.posterFrame:after{inset:24%;transform:rotate(-11deg)}
+.posterU{
+  font-size:26vw;font-weight:800;letter-spacing:-.14em;color:transparent;
+  -webkit-text-stroke:1px rgba(21,21,20,.32);line-height:.72
+}
+.pc{position:absolute;border-radius:50%;border:1px solid rgba(21,21,20,.16)}
+.pc.one{width:68%;aspect-ratio:1}.pc.two{width:43%;aspect-ratio:1;border-style:dashed}.pc.three{width:17%;aspect-ratio:1;background:rgba(108,92,231,.12)}
+.cross{position:absolute;font:10px 'DM Mono',monospace;color:#77736e;z-index:4}
+.cross.a{top:12px;left:12px}.cross.b{right:12px;bottom:12px}
+.studioText h2{margin-bottom:38px}
+.studioText p{max-width:420px;color:#77736e;line-height:1.75;font-size:13px}
+.stats{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:15px;margin-top:75px;
+  border-top:1px solid var(--line);padding-top:22px
+}
+.stats div{display:flex;flex-direction:column;gap:8px}
+.stats b{font-size:28px;letter-spacing:-.04em}
+.stats small{font:8px 'DM Mono',monospace;letter-spacing:.13em;color:#77736e}
+
+/* ---------- playground ---------- */
+.playTop{
+  display:grid;grid-template-columns:1fr .56fr;gap:5vw;align-items:end;padding:8vh 0 7vh
+}
+.playTop p{max-width:290px;color:#77736e;font-size:12px;line-height:1.75}
+.plays{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.play{
+  min-height:300px;border:1px solid var(--line);position:relative;overflow:hidden;
+  background:var(--paper);grid-column:span 4;transition:.35s
+}
+.play:nth-child(4),.play:nth-child(5){grid-column:span 6}
+.play:hover{transform:translateY(-5px);background:#f4f1ea}
+.play .num,.play small{position:absolute;left:16px;font:8px 'DM Mono',monospace;letter-spacing:.12em;color:#77736e;z-index:4}
+.play .num{top:16px}.play small{bottom:16px}
+.play strong{
+  position:absolute;left:16px;bottom:42px;z-index:4;
+  font-size:40px;letter-spacing:-.06em
+}
+.pvis{position:absolute;inset:0;display:grid;place-items:center}
+.circlePulse{
+  width:115px;height:115px;border:1px solid rgba(21,21,20,.55);border-radius:50%;
+  box-shadow:0 0 0 18px rgba(108,92,231,.04),0 0 0 38px rgba(108,92,231,.025);
+  animation:pulse 4.5s ease-in-out infinite
+}
+@keyframes pulse{50%{transform:scale(1.13);opacity:.58}}
+.Aa{font-size:17vw;font-weight:800;line-height:.7;color:transparent;-webkit-text-stroke:1px rgba(21,21,20,.55);animation:typeFloat 4.5s ease-in-out infinite}
+@keyframes typeFloat{50%{transform:translateY(-14px) rotate(2deg)}}
+.p3{background:linear-gradient(135deg,#eeece4,#d7d1c7)}
+.void{width:185px;aspect-ratio:1;border-radius:50%;background:#111;box-shadow:0 20px 70px rgba(0,0,0,.12)}
+.p4{background:linear-gradient(135deg,#e8e4dc,#c8d1ee)}
+.pOrbit{width:180px;aspect-ratio:1;border:1px solid rgba(86,119,216,.65);border-radius:50%;position:relative;animation:slowSpin 14s linear infinite}
+.pOrbit i{position:absolute;width:10px;height:10px;border-radius:50%;left:50%;top:-5px;transform:translateX(-50%);background:var(--blue)}
+.pOrbit i+ i{top:auto;bottom:-5px;left:28%;background:var(--violet)}
+.p5{background:linear-gradient(135deg,#e7ded8,#d3b8b2)}
+.signal{display:flex;align-items:flex-end;justify-content:center;gap:12px;height:120px}
+.signal i{width:2px;background:var(--ink);height:25%;animation:signal 1.5s ease-in-out infinite alternate}
+.signal i:nth-child(2){height:70%;animation-delay:.12s}.signal i:nth-child(3){height:45%;animation-delay:.28s}.signal i:nth-child(4){height:90%;animation-delay:.4s}
+@keyframes signal{to{transform:scaleY(.3);opacity:.35}}
+
+/* ---------- stack ---------- */
+.stack{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden}
+.marquee{
+  display:flex;gap:22px;align-items:center;width:max-content;padding:34px 0;
+  font-size:clamp(24px,3.4vw,52px);font-weight:700;letter-spacing:-.045em;
+  animation:marquee 34s linear infinite
+}
+.marquee i{font-style:normal;color:#8a8680}
+@keyframes marquee{to{transform:translateX(-50%)}}
+.stackGrid{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line)}
+.stackGrid>div{padding:28px 8vw;border-right:1px solid var(--line);min-height:160px;display:flex;flex-direction:column;gap:18px}
+.stackGrid>div:last-child{border-right:0}
+.stackGrid span{font:8px 'DM Mono',monospace;letter-spacing:.13em;color:#77736e}
+.stackGrid strong{font-size:22px;line-height:1.15;letter-spacing:-.03em}
+
+/* ---------- contact ---------- */
+.contactTop{
+  display:grid;grid-template-columns:1fr .43fr;gap:7vw;align-items:end;padding:8vh 0 7vh
+}
+.contactSide{padding-bottom:7px}.contactSide p{color:#77736e;line-height:1.75;font-size:12px;max-width:220px}
+.mailButton{
+  display:flex;justify-content:space-between;gap:35px;margin-top:48px;
+  padding:16px 0;border-bottom:1px solid var(--ink);
+  font:8px 'DM Mono',monospace;letter-spacing:.13em;transition:.25s
+}
+.mailButton b{font-size:17px;font-weight:400;color:var(--violet)}
+.mailButton:hover{padding-left:9px;border-color:var(--violet)}
+.contactLinks{
+  border-top:1px solid var(--line);padding-top:21px;
+  display:grid;grid-template-columns:2fr repeat(3,1fr);gap:16px;
+  font:8px 'DM Mono',monospace;letter-spacing:.13em;color:#77736e
+}
+.contactLinks a:hover{color:var(--violet)}
+
+/* ---------- footer ---------- */
+.footer{
+  display:flex;justify-content:space-between;align-items:end;
+  padding:64px 8vw 38px;border-top:1px solid var(--line)
+}
+.footerBrand{font-size:clamp(44px,5.5vw,80px);line-height:.82;letter-spacing:-.07em;font-weight:800}
+.footerMeta{display:grid;gap:11px;text-align:right;font:8px/1.4 'DM Mono',monospace;color:#77736e;letter-spacing:.11em}
+.footerMeta a:hover{color:var(--violet)}
+
+/* ---------- responsive ---------- */
+@media (max-width:980px){
+  .nav{display:none}
+  .menu{display:block;color:#77736e;font:9px 'DM Mono',monospace;letter-spacing:.12em}
+  .top{grid-template-columns:1fr auto;padding:19px 20px}
+  .hero{padding-left:6vw;padding-right:6vw}
+  .hero-scribble{margin-right:3vw}
+  .introGrid,.studioGrid,.servicesTop,.playTop,.contactTop{grid-template-columns:1fr}
+  .copy,.servicesTop p,.playTop p,.contactSide{justify-self:start}
+  .intro-art{margin-top:30px;min-height:320px}
+  .section{padding:130px 6vw}
+  .workHead{grid-template-columns:1fr .55fr}
+  .projectInfo{grid-template-columns:1fr}
+  .projectInfo p{max-width:310px}
+  .poster{min-height:500px}
+  .plays{grid-template-columns:1fr 1fr}
+  .play,.play:nth-child(4),.play:nth-child(5){grid-column:span 1}
+  .stackGrid{grid-template-columns:1fr 1fr}
+  .stackGrid>div:nth-child(2){border-right:0}
+  .stackGrid>div:nth-child(3),.stackGrid>div:nth-child(4){border-top:1px solid var(--line)}
+}
+@media (max-width:620px){
+  .top{padding:16px 17px}
+  .brand{font-size:10px}
+  .meta>span:first-child,.meta>span:nth-child(2){display:none}
+  .hero{padding:110px 18px 28px}
+  .hero-kicker{font-size:7px}
+  .hero-title{padding-top:10vh}
+  .big{font-size:clamp(57px,17vw,105px)}
+  .hero-copy{font-size:9px;max-width:230px}
+  .hero-bottom{grid-template-columns:1fr auto}
+  .coords{display:none}
+  .hero-scribble{font-size:15px;margin-right:0}
+  .section{padding:105px 18px}
+  .section h2,.workHead h2,.servicesTop h2,.statement h2,.studioText h2,.playTop h2,.contactTop h2{font-size:clamp(44px,14vw,80px)}
+  .intro-art{min-height:280px}
+  .workHead{grid-template-columns:1fr;gap:20px}
+  .workHead p{justify-self:start}
+  .visual{height:55vh;min-height:350px}
+  .metaRow{font-size:7px}
+  .projectInfo h3{font-size:clamp(50px,18vw,86px)}
+  .service{grid-template-columns:35px 1fr 18px;gap:9px;min-height:104px}
+  .service p{display:none}
+  .studioGrid{padding-top:7vh}
+  .poster{min-height:420px}
+  .stats{grid-template-columns:1fr 1fr;gap:20px}
+  .plays{grid-template-columns:1fr}
+  .play,.play:nth-child(4),.play:nth-child(5){grid-column:span 1}
+  .stackGrid{grid-template-columns:1fr}
+  .stackGrid>div{border-right:0!important;border-top:1px solid var(--line)}
+  .stackGrid>div:first-child{border-top:0}
+  .stackGrid>div{padding:24px 18px}
+  .contactLinks{grid-template-columns:1fr}
+  .contactLinks a:first-child{grid-column:span 1}
+  .footer{padding:45px 18px 28px;display:grid;gap:28px}
+  .footerMeta{text-align:left}
+  .graffiti{font-size:12px}
+}
+
+/* no custom cursor: native cursor intentionally retained */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.001ms!important;transition-duration:.001ms!important}
+}
+</style>
+</head>
+<body>
+<div class="paper-noise"></div>
+<div class="page">
+
+<header class="top" id="topbar">
+  <a class="brand" href="#top"><span class="mark"><i></i><i></i></span><span>URAL / STUDIO</span></a>
+  <nav class="nav">
+    <a href="#work">WORK</a><a href="#services">SERVICES</a><a href="#studio">STUDIO</a><a href="#playground">PLAYGROUND</a><a href="#contact">CONTACT</a>
+  </nav>
+  <div class="meta"><span>2026</span><span id="clock">00:00</span><button class="menu" id="menuBtn">MENU +</button></div>
+</header>
+
+<section class="hero" id="top">
+  <div class="hero-grid"></div>
+  <div class="hero-kicker"><span>INDEPENDENT DIGITAL STUDIO</span><span>EST. 2026 / REMOTE</span></div>
+
+  <div class="hero-title">
+    <small>01 / INTRODUCING</small>
+    <div class="line"><span class="big">WE MAKE</span></div>
+    <div class="line"><span class="big">DIGITAL</span><span class="big outline">FEEL</span></div>
+    <div class="line accent"><span class="big">ALIVE.</span><span class="hero-scribble">make it strange.</span></div>
+  </div>
+
+  <div class="graffiti hero-g1">NO TEMPLATE<small>JUST FORM + MOTION</small><span class="underline"></span></div>
+  <div class="graffiti hero-g2">ideas / in motion</div>
+  <div class="spray hero-spray"></div>
+  <svg class="graffiti-arrow hero-arrow" viewBox="0 0 100 50" aria-hidden="true">
+    <path d="M8 37 C34 18, 55 18, 78 8"/><polygon points="76,3 92,5 82,17"/></svg>
+
+  <div class="hero-bottom">
+    <div class="hero-copy">Digital products, identities and interactive experiences for brands that want to be remembered.</div>
+    <div class="scrollHint" onclick="document.querySelector('#intro').scrollIntoView({behavior:'smooth'})">SCROLL ↓</div>
+    <div class="coords">41°18' / 69°16'</div>
+  </div>
+</section>
+
+<section class="section" id="intro">
+  <div class="label"><span>01</span><span>INTRO</span></div>
+  <div class="introGrid">
+    <h2>WE DON'T JUST<br/><span class="outlineText">BUILD WEBSITES.</span><br/><span class="acid">WE BUILD<br/>EXPERIENCES.</span></h2>
+    <div>
+      <div class="copy">
+        <p>From first visual idea to the final interaction, every detail has a purpose.</p>
+        <div class="system"><div>STRATEGY</div><div>DESIGN</div><div>DEVELOPMENT</div><div>MOTION</div></div>
+      </div>
+      <div class="intro-art">
+        <div class="stamp"><span>UR /<br/>STUDIO<br/>2026</span></div>
+        <div class="scribble">leave some air.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="work">
+  <div class="label"><span>02</span><span>SELECTED WORK</span></div>
+  <div class="workHead"><h2>SELECTED<br/><span class="outlineText">WORK</span></h2><p>A visual catalogue of digital products, identities and experiments created by Ural Studio.</p></div>
+  <div class="projects">
+
+    <article class="project">
+      <div class="visual v1">
+        <div class="project-art"><div class="shape ribbon"></div></div>
+        <div class="graffiti" style="left:6%;top:9%;color:var(--violet);transform:rotate(-6deg);font-size:16px">NØR / 01</div>
+        <div class="hoverTag">VIEW PROJECT ↗</div>
+      </div>
+      <div class="metaRow"><span>01 / NØR</span><span>FASHION / DIGITAL COMMERCE</span></div>
+      <div class="projectInfo"><h3>NØR</h3><p>An editorial fashion platform with fluid navigation and a quiet commerce layer.</p></div>
+      <div class="tech"><span>REACT</span><span>TYPESCRIPT</span><span>THREE.JS</span></div>
+    </article>
+
+    <article class="project">
+      <div class="visual v2">
+        <div class="project-art"><div class="shape blocks"><i></i><i></i><i></i></div></div>
+        <div class="graffiti" style="right:6%;top:12%;transform:rotate(4deg);font-size:15px">less / more</div>
+        <div class="hoverTag">VIEW PROJECT ↗</div>
+      </div>
+      <div class="metaRow"><span>02 / VANTA</span><span>ARCHITECTURE / DIGITAL EXPERIENCE</span></div>
+      <div class="projectInfo"><h3>VANTA</h3><p>A spatial web experience where architecture becomes the interface.</p></div>
+      <div class="tech"><span>REACT</span><span>GSAP</span><span>WEBGL</span></div>
+    </article>
+
+    <article class="project">
+      <div class="visual v3">
+        <div class="project-art"><div class="shape orb"><i></i><i></i><i></i></div></div>
+        <div class="graffiti" style="left:7%;bottom:11%;color:var(--orange);transform:rotate(-5deg);font-size:15px">keep moving ↗</div>
+        <div class="hoverTag">VIEW PROJECT ↗</div>
+      </div>
+      <div class="metaRow"><span>03 / ORBIT</span><span>TECHNOLOGY / PRODUCT</span></div>
+      <div class="projectInfo"><h3>ORBIT</h3><p>A product launch built around motion, scale and a living 3D object.</p></div>
+      <div class="tech"><span>NEXT.JS</span><span>TYPESCRIPT</span><span>THREE.JS</span></div>
+    </article>
+
+    <article class="project">
+      <div class="visual v4">
+        <div class="project-art"><div class="shape bloom"><i></i><i></i><i></i><i></i></div></div>
+        <div class="graffiti" style="right:9%;top:10%;transform:rotate(8deg);font-size:17px">soft power</div>
+        <div class="hoverTag">VIEW PROJECT ↗</div>
+      </div>
+      <div class="metaRow"><span>04 / MIRA</span><span>BEAUTY / EDITORIAL</span></div>
+      <div class="projectInfo"><h3>MIRA</h3><p>A tactile editorial identity with restrained motion and luminous typography.</p></div>
+      <div class="tech"><span>REACT</span><span>FRAMER</span><span>TAILWIND</span></div>
+    </article>
+  </div>
+</section>
+
+<section class="section" id="services">
+  <div class="label"><span>03</span><span>WHAT WE DO</span></div>
+  <div class="servicesTop"><h2>DESIGN<br/><span class="outlineText">MEETS</span><br/>CODE.</h2><p>One studio. One process. Strategy, design and development working as one visual system.</p></div>
+  <div class="serviceList">
+    <div class="service"><small>01</small><h3>DIGITAL PRODUCTS</h3><p>Websites / Applications / Commerce</p><b>↗</b></div>
+    <div class="service"><small>02</small><h3>VISUAL IDENTITY</h3><p>Art Direction / Branding / Systems</p><b>↗</b></div>
+    <div class="service"><small>03</small><h3>INTERACTION</h3><p>Motion / 3D / Creative Development</p><b>↗</b></div>
+    <div class="service"><small>04</small><h3>DEVELOPMENT</h3><p>React / TypeScript / WebGL</p><b>↗</b></div>
+  </div>
+</section>
+
+<section class="statement">
+  <div class="statementInner">
+    <span>04 / APPROACH</span>
+    <h2>NO TEMPLATE.<br/>NO SHORTCUT.<br/><span class="outlineText">NO NOISE.</span></h2>
+    <div class="statementLine"></div>
+    <p>Good digital products don't need more. They need better decisions.</p>
+  </div>
+  <div class="graffiti">draw outside the grid.</div>
+</section>
+
+<section class="section" id="studio">
+  <div class="label"><span>05</span><span>THE STUDIO</span></div>
+  <div class="studioGrid">
+    <div class="poster">
+      <div class="posterFrame">
+        <span class="cross a">+</span><span class="cross b">+</span>
+        <div class="pc one"></div><div class="pc two"></div><div class="pc three"></div>
+        <div class="posterU">U</div>
+      </div>
+    </div>
+    <div class="studioText">
+      <h2>SMALL<br/>STUDIO.<br/><span class="outlineText">BIG DIGITAL<br/>PRESENCE.</span></h2>
+      <p>Ural Studio is an independent digital studio focused on creating distinctive digital experiences for modern brands, products and people.</p>
+      <p>We work at the intersection of design, development and motion.</p>
+      <div class="stats"><div><b>04+</b><small>DISCIPLINES</small></div><div><b>12+</b><small>EXPERIMENTS</small></div><div><b>∞</b><small>PIXELS</small></div><div><b>01</b><small>STUDIO</small></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="playground">
+  <div class="label"><span>06</span><span>PLAYGROUND</span></div>
+  <div class="playTop"><h2>THINGS WE<br/><span class="outlineText">BUILD FOR FUN.</span></h2><p>Experiments, prototypes and strange little interfaces that sometimes become real products.</p></div>
+  <div class="plays">
+    <div class="play p1"><span class="num">01</span><strong>TRACE</strong><div class="pvis"><div class="circlePulse"></div></div><small>OPEN EXPERIMENT ↗</small></div>
+    <div class="play p2"><span class="num">02</span><strong>TYPE</strong><div class="pvis"><div class="Aa">Aa</div></div><small>OPEN EXPERIMENT ↗</small></div>
+    <div class="play p3"><span class="num">03</span><strong>VOID</strong><div class="pvis"><div class="void"></div></div><small>OPEN EXPERIMENT ↗</small></div>
+    <div class="play p4"><span class="num">04</span><strong>ORBIT</strong><div class="pvis"><div class="pOrbit"><i></i><i></i></div></div><small>OPEN EXPERIMENT ↗</small></div>
+    <div class="play p5"><span class="num">05</span><strong>SIGNAL</strong><div class="pvis"><div class="signal"><i></i><i></i><i></i><i></i></div></div><small>OPEN EXPERIMENT ↗</small></div>
+  </div>
+</section>
+
+<section class="stack">
+  <div class="marquee">
+    <span>REACT</span><i>—</i><span>TYPESCRIPT</span><i>—</i><span>THREE.JS</span><i>—</i><span>GSAP</span><i>—</i><span>WEBGL</span><i>—</i><span>TAILWIND</span><i>—</i><span>REACT</span><i>—</i><span>TYPESCRIPT</span><i>—</i><span>THREE.JS</span><i>—</i><span>GSAP</span>
+  </div>
+  <div class="stackGrid">
+    <div><span>FRONTEND</span><strong>React<br/>TypeScript<br/>Vite</strong></div>
+    <div><span>MOTION</span><strong>GSAP<br/>CSS Motion<br/>Micro UI</strong></div>
+    <div><span>3D</span><strong>Three.js<br/>WebGL<br/>R3F</strong></div>
+    <div><span>SYSTEM</span><strong>Git<br/>Design System<br/>Responsive</strong></div>
+  </div>
+</section>
+
+<section class="section" id="contact">
+  <div class="label"><span>07</span><span>CONTACT</span></div>
+  <div class="contactTop">
+    <h2>HAVE A<br/><span class="outlineText">PROJECT</span><br/>IN MIND?</h2>
+    <div class="contactSide">
+      <p>Let's build something worth remembering.</p>
+      <a class="mailButton" href="mailto:hello@urall.online"><span>START A PROJECT</span><b>↗</b></a>
+    </div>
+  </div>
+  <div class="contactLinks">
+    <a href="mailto:hello@urall.online">hello@urall.online</a>
+    <a href="#" onclick="return false">Telegram</a><a href="#" onclick="return false">GitHub</a><a href="#" onclick="return false">Instagram</a>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="footerBrand">URAL<br/>STUDIO</div>
+  <div class="footerMeta"><span>INDEPENDENT DIGITAL STUDIO</span><span>© 2026 URAL STUDIO</span><a href="#top">BACK TO TOP ↑</a></div>
+</footer>
+
+</div>
+<script>
+const bar=document.createElement('span');
+bar.style.cssText='position:fixed;right:12px;top:50%;transform:translateY(-50%);width:1px;height:115px;background:rgba(21,21,20,.12);z-index:35;transform-origin:top';
+document.body.appendChild(bar);
+function updateScroll(){
+  const max=document.documentElement.scrollHeight-innerHeight;
+  const p=max?scrollY/max:0;
+  bar.style.background='linear-gradient(to bottom,var(--violet) '+(p*100)+'%,rgba(21,21,20,.12) '+(p*100)+'%)';
+}
+addEventListener('scroll',updateScroll,{passive:true});
+updateScroll();
+
+const topbar=document.getElementById('topbar');
+addEventListener('scroll',()=>topbar.classList.toggle('scrolled',scrollY>24),{passive:true});
+
+function updateClock(){
+  const d=new Date();
+  document.getElementById('clock').textContent=String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+updateClock();setInterval(updateClock,1000);
+
+const menu=document.getElementById('menuBtn');
+const nav=document.querySelector('.nav');
+menu.addEventListener('click',()=>{
+  document.body.classList.toggle('mobileNav');
+  nav.style.display=document.body.classList.contains('mobileNav')?'flex':'';
+  if(document.body.classList.contains('mobileNav')){
+    nav.style.position='fixed';nav.style.inset='78px 18px auto 18px';
+    nav.style.background='var(--bg)';nav.style.padding='24px';
+    nav.style.border='1px solid var(--line)';
+    nav.style.flexDirection='column';nav.style.gap='22px';nav.style.zIndex='70';
+    nav.style.boxShadow='0 18px 50px rgba(0,0,0,.08)';
+    menu.textContent='CLOSE ×';
+  }else{
+    nav.removeAttribute('style');menu.textContent='MENU +';
+  }
+});
+[...document.querySelectorAll('.nav a')].forEach(a=>a.addEventListener('click',()=>{
+  if(innerWidth<=980){nav.removeAttribute('style');document.body.classList.remove('mobileNav');menu.textContent='MENU +'}
+}));
+</script>
+</body>
+</html>
